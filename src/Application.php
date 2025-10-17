@@ -107,6 +107,10 @@ final readonly class Application
         return $resultCode;
     }
 
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
     private function createUseCase(array $arguments): void
     {
         if (empty($arguments[0])) {
@@ -201,15 +205,55 @@ final readonly class Application
         $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
         if (file_exists($configFilePath)) {
             try {
+                /**
+                 * @var array{
+                 *     php-clean-architecture: array{
+                 *      0: array{
+                 *          levels: array{
+                 *              0: array{
+                 *                  entities: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              1: array{
+                 *                  repositories: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              2: array{
+                 *                  use_cases: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              3: array{
+                 *                  controllers: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              3: array{
+                 *                  services: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              }
+                 *          }
+                 *      }
+                 *     }
+                 * } $config
+                 */
                 $config = Yaml::parseFile($configFilePath);
                 if (isset($config['php-clean-architecture'][0]['levels'])) {
-                    foreach ($config['php-clean-architecture'][0]['levels'] as $levelConfig) {
+                    foreach ((array) $config['php-clean-architecture'][0]['levels'] as $levelConfig) {
                         if (isset($levelConfig[$level]['path'])) {
                             return $levelConfig[$level]['path'];
                         }
                     }
                 }
-            } catch (\Symfony\Component\Yaml\Exception\ParseException $exception) {
+            } catch (ParseException $exception) {
                 printf('Unable to parse the YAML file. Error: %s', $exception->getMessage());
             }
         }
@@ -222,9 +266,49 @@ final readonly class Application
         $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
         if (file_exists($configFilePath)) {
             try {
+                /**
+                 * @var array{
+                 *     php-clean-architecture: array{
+                 *      0: array{
+                 *          levels: array{
+                 *              0: array{
+                 *                  entities: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              1: array{
+                 *                  repositories: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              2: array{
+                 *                  use_cases: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              3: array{
+                 *                  controllers: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              },
+                 *              3: array{
+                 *                  services: array{
+                 *                      path: string,
+                 *                      namespace: string
+                 *                  }
+                 *              }
+                 *          }
+                 *      }
+                 *     }
+                 * } $config
+                 */
                 $config = Yaml::parseFile($configFilePath);
                 if (isset($config['php-clean-architecture'][0]['levels'])) {
-                    foreach ($config['php-clean-architecture'][0]['levels'] as $levelConfig) {
+                    foreach ((array) $config['php-clean-architecture'][0]['levels'] as $levelConfig) {
                         if (isset($levelConfig[$level]['namespace'])) {
                             return $levelConfig[$level]['namespace'];
                         }
