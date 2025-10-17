@@ -3,8 +3,9 @@
 namespace {{namespace}};
 
 use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
 
-class {{useCaseName}} extends BaseUseCase
+class {{useCaseName}} extends BaseUseCase implements UseCaseInterface
 {
     public function handle(...$arguments): mixed
     {

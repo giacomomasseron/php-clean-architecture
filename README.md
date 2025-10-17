@@ -12,7 +12,9 @@ This is an opinionated package that defines levels of the architecture and the d
 
 - [Installation](#installation)
 - [Getting started](#Getting-started)
-- [Why Clean Code](#Why-Clean-Code)
+    - [Commands](#Commands)
+        - [Make UseCase](#Make-UseCase)
+- [Why Clean Architecture](#Why-Clean-Architecture)
 - [Concepts](#Concepts)
     - [Architecture Level](#Architecture-Level)
     - [UseCase](#UseCase)
@@ -31,7 +33,7 @@ You can install the package via composer:
 composer require giacomomasseron/php-clean-architecture
 ```
 
-After the installation, you must run the *install* command to publish *deptrac.yaml* file to your root folder:
+After the installation, you must run the *install* command to publish the *deptrac.yaml* file to your root folder:
 ```bash
 vendor/bin/php-clean-architecture install
 ```
@@ -44,7 +46,19 @@ To check the architecture levels in your project, use the following command:
 vendor/bin/php-clean-architecture check
 ```
 
-## Why Clean Code?
+### Commands
+
+All commands read the *php-clean-architecture.yaml* config file to know where to put the files created and which namespace they belong to.
+
+#### Make UseCase
+
+To create a UseCase, you can use the following command:
+
+```bash
+vendor/bin/php-clean-architecture make:usecase DoSomethingUseCase
+```
+
+## Why Clean Architecture?
 
 Why not?  
 It is a well-known, well-structured architecture system.
@@ -58,12 +72,11 @@ In the Clean Architecture, a level is a layer of the architecture with a specifi
 The rule of thumb of the Clean Architecture is:  
 **An inner circle must never know anything about the circles around it**.
 
-
 ### UseCase
 
-UseCase is a concept of Use Cases level.  
+UseCase is a concept of Use Cases level.
 
-An UseCase is every action your project performs.  
+A UseCase is every action your project performs.  
 Good examples of use cases are:
 - Login
 - Register
@@ -74,7 +87,7 @@ Good examples of use cases are:
 
 ## How it works
 
-The package uses [deptrac](https://github.com/deptrac/deptrac) to define the levels and to check the dependencies between them.  
+The package uses [deptrac](https://github.com/deptrac/deptrac) to define the levels and to check the dependencies between them.
 
 ### Levels
 
@@ -101,20 +114,20 @@ The *Repository* level can only depend on *Entity* or *Service* levels.
 The *UseCase* level can only depend on *Repository* or *Service* levels.  
 The *Controller* level can only depend on *UseCase* levels.
 
-**What is Service level?**  
-The Service level can be used for third part tools or libraries.
+**What is the Service level?**
+The Service level can be used for third-party tools or libraries.
 
 ### Define a level inside the project
 
 The package comes with these interfaces:
 
-- **EntityInterface**: implements this interface if the class belongs to Entity level.
-- **RepositoryInterface**: implements this interface if the class belongs to Repository level.
-- **UseCaseInterface**: implements this interface if the class belongs to UseCase level.
-- **ControllerInterface**: implements this interface if the class belongs to Controller level.
+- **EntityInterface**: implement this interface if the class belongs to the Entity level.
+- **RepositoryInterface**: implement this interface if the class belongs to the Repository level.
+- **UseCaseInterface**: implement this interface if the class belongs to the UseCase level.
+- **ControllerInterface**: implement this interface if the class belongs to the Controller level.
 
-For classes that belong to the Service level, you need the class name must contains the *Service* word.  
-For example:  
+For classes that belong to the Service level, the class name must contain the *Service* word.
+For example:
 
 ```php
 final public class ThirdPartyService
@@ -132,7 +145,7 @@ public class YourController implements ControllerInterface
 
 ### UseCases
 
-When you create a UseCase, you need the class extends the BaseUseCase class, and you need to implement the UseCaseInterface.  
+When you create a UseCase, the class needs to extend the BaseUseCase class, and you need to implement the UseCaseInterface.
 For example:
 
 ```php

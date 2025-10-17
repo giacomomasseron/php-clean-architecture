@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace GiacomoMasseroni\PHPCleanArchitecture;
 
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
+
 final readonly class Application
 {
     private string $baseFolder;
@@ -36,9 +39,9 @@ final readonly class Application
                 echo implode(PHP_EOL, $output);
                 exit($result);
 
-                /*case 'create:use-case':
-                    $this->createUseCase($arguments);
-                    exit(0);*/
+            case 'make:use-case':
+                $this->createUseCase($arguments);
+                exit(0);
         }
 
         exit(1);
@@ -70,18 +73,25 @@ final readonly class Application
     {
         echo "Installing PHP Clean Architecture...\n";
 
-        $newPath = '.' . DIRECTORY_SEPARATOR . 'deptrac.yaml';
+        $newDeptracFilePath = '.' . DIRECTORY_SEPARATOR . 'deptrac.yaml';
 
-        if (file_exists($newPath)) {
-            if (! $this->readYesNo()) {
-                echo "Operation cancelled. deptrac.yaml file was not overwritten.\n";
-                return;
-            }
+        if (file_exists($newDeptracFilePath) && ! $this->readYesNo()) {
+            echo "deptrac.yaml file was not overwritten.\n";
+        } else {
+            echo "Copying deptrac.yaml file to your root directory.\n";
+
+            $this->copyDeptracFile($newDeptracFilePath);
         }
 
-        echo "Copying deptrac.yaml file to your root directory.\n";
+        $newConfigFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
 
-        $this->copyDeptracFile($newPath);
+        if (file_exists($newConfigFilePath) && ! $this->readYesNo()) {
+            echo "php-clean-architecture.yaml file was not overwritten.\n";
+        } else {
+            echo "Copying php-clean-architecture.yaml file to your root directory.\n";
+
+            $this->copyConfigFile($newConfigFilePath);
+        }
 
         echo "Done! You can now run 'vendor/bin/php-clean-architecture check' to check your architecture.\n";
     }
@@ -97,7 +107,7 @@ final readonly class Application
         return $resultCode;
     }
 
-    /*private function createUseCase(array $arguments): void
+    private function createUseCase(array $arguments): void
     {
         if (empty($arguments[0])) {
             echo "Error: specify use case name.\n";
@@ -105,8 +115,9 @@ final readonly class Application
         }
 
         $useCaseName = $arguments[0];
-        $directory = $this->baseFolder . DIRECTORY_SEPARATOR . 'UseCases';
+        $directory = $this->getPathFromConfigFile('use_cases');
         $filePath = $directory . DIRECTORY_SEPARATOR . $useCaseName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('use_cases');
 
         if (!is_dir($directory)) {
             mkdir($directory, 0o777, true);
@@ -126,7 +137,7 @@ final readonly class Application
                     '{{useCaseName}}',
                 ],
                 [
-                    'App\UseCases',
+                    $nameSpace,
                     $useCaseName,
                 ],
                 $stubContent
@@ -135,7 +146,7 @@ final readonly class Application
 
             echo "Use case created: $filePath\n";
         }
-    }*/
+    }
 
     private function copyDeptracFile(string $newPath): void
     {
@@ -148,6 +159,21 @@ final readonly class Application
         $content = file_get_contents($filePath);
         if ($content !== false) {
             $newContent = str_replace('{deptrac_path}', $deptracPath, $content);
+            file_put_contents($newPath, $newContent);
+        }
+    }
+
+    private function copyConfigFile(string $newPath): void
+    {
+        $this->updateConfigPath($this->baseFolder, $newPath);
+    }
+
+    private function updateConfigPath(string $deptracPath, string $newPath): void
+    {
+        $filePath = $this->getBasePath() . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
+        $content = file_get_contents($filePath);
+        if ($content !== false) {
+            $newContent = str_replace(['{base_folder}', '{base_namespace}'], [$deptracPath, ucfirst($deptracPath)], $content);
             file_put_contents($newPath, $newContent);
         }
     }
@@ -168,5 +194,47 @@ final readonly class Application
     private function getBasePath(): string
     {
         return '.' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'giacomomasseron' . DIRECTORY_SEPARATOR . 'php-clean-architecture';
+    }
+
+    private function getPathFromConfigFile(string $level): string
+    {
+        $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
+        if (file_exists($configFilePath)) {
+            try {
+                $config = Yaml::parseFile($configFilePath);
+                if (isset($config['php-clean-architecture'][0]['levels'])) {
+                    foreach ($config['php-clean-architecture'][0]['levels'] as $levelConfig) {
+                        if (isset($levelConfig[$level]['path'])) {
+                            return $levelConfig[$level]['path'];
+                        }
+                    }
+                }
+            } catch (\Symfony\Component\Yaml\Exception\ParseException $exception) {
+                printf('Unable to parse the YAML file. Error: %s', $exception->getMessage());
+            }
+        }
+
+        return '';
+    }
+
+    private function getNamespaceFromConfigFile(string $level): string
+    {
+        $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
+        if (file_exists($configFilePath)) {
+            try {
+                $config = Yaml::parseFile($configFilePath);
+                if (isset($config['php-clean-architecture'][0]['levels'])) {
+                    foreach ($config['php-clean-architecture'][0]['levels'] as $levelConfig) {
+                        if (isset($levelConfig[$level]['namespace'])) {
+                            return $levelConfig[$level]['namespace'];
+                        }
+                    }
+                }
+            } catch (ParseException $exception) {
+                printf('Unable to parse the YAML file. Error: %s', $exception->getMessage());
+            }
+        }
+
+        return '';
     }
 }

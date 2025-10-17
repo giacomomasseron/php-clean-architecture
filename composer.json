@@ -20,9 +20,9 @@
             "role": "Developer"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-      "deptrac/deptrac": "4.2.1"
+        "deptrac/deptrac": "4.2.1",
+        "symfony/yaml": "7.4.x-dev"
     },
     "require-dev": {
         "pestphp/pest": "^3.0",
@@ -37,8 +37,7 @@
         "composer/composer": "^2.9@dev"
     },
     "bin": [
-        "php-clean-architecture",
-        "bin/deptrac"
+        "php-clean-architecture"
     ],
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
@@ -68,5 +67,7 @@
             "pestphp/pest-plugin": true,
             "phpstan/extension-installer": true
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

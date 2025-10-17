@@ -1,0 +1,17 @@
+php-clean-architecture:
+  - levels:
+    - entities:
+        path: './{base_folder}/Entities'
+        namespace: '{base_namespace}\Entities'
+    - repositories:
+        path: './{base_folder}/Repositories'
+        namespace: '{base_namespace}\Repositories'
+    - use_cases:
+        path: './{base_folder}/UseCases'
+        namespace: '{base_namespace}\UseCases'
+    - controllers:
+        path: './{base_folder}/Controllers'
+        namespace: '{base_namespace}\Controllers'
+    - services:
+        path: './{base_folder}/Services'
+        namespace: '{base_namespace}\Services'
