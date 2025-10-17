@@ -13,7 +13,11 @@ This is an opinionated package that defines levels of the architecture and the d
 - [Installation](#installation)
 - [Getting started](#Getting-started)
     - [Commands](#Commands)
+        - [Make Entity](#Make-Entity)
+        - [Make Repository](#Make-Repository)
         - [Make UseCase](#Make-UseCase)
+        - [Make Controller](#Make-Controller)
+        - [Make Service](#Make-Service)
 - [Why Clean Architecture](#Why-Clean-Architecture)
 - [Concepts](#Concepts)
     - [Architecture Level](#Architecture-Level)
@@ -50,6 +54,22 @@ vendor/bin/php-clean-architecture check
 
 All commands read the *php-clean-architecture.yaml* config file to know where to put the files created and which namespace they belong to.
 
+#### Make Entity
+
+To create an Entity, you can use the following command:
+
+```bash
+vendor/bin/php-clean-architecture make:entity EntityInYourProject
+```
+
+#### Make Repository
+
+To create a Repository, you can use the following command:
+
+```bash
+vendor/bin/php-clean-architecture make:repository UserRepository
+```
+
 #### Make UseCase
 
 To create a UseCase, you can use the following command:
@@ -57,6 +77,25 @@ To create a UseCase, you can use the following command:
 ```bash
 vendor/bin/php-clean-architecture make:usecase DoSomethingUseCase
 ```
+
+#### Make Controller
+
+To create a Controller, you can use the following command:
+
+```bash
+vendor/bin/php-clean-architecture make:controller UserController
+```
+
+#### Make Service
+
+To create a Service, you can use the following command:
+
+```bash
+vendor/bin/php-clean-architecture make:service ThirdyPartyService
+vendor/bin/php-clean-architecture make:service ThirdyParty
+```
+
+In both cases, the created class will be named *ThirdyPartyService*.
 
 ## Why Clean Architecture?
 
