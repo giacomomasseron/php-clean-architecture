@@ -33,7 +33,7 @@ You can install the package via composer:
 composer require giacomomasseron/php-clean-architecture
 ```
 
-After the installation, you must run the *install* command to publish the *deptrac.yaml* file to your root folder:
+After the installation, you must run the *install* command to publish the *deptrac.yaml* and the *php-clean-architecture.yaml* config files to your root folder:
 ```bash
 vendor/bin/php-clean-architecture install
 ```
