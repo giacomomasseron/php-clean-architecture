@@ -39,8 +39,24 @@ final readonly class Application
                 echo implode(PHP_EOL, $output);
                 exit($result);
 
+            case 'make:entity':
+                $this->createEntity($arguments);
+                exit(0);
+
             case 'make:use-case':
                 $this->createUseCase($arguments);
+                exit(0);
+
+            case 'make:repository':
+                $this->createRepository($arguments);
+                exit(0);
+
+            case 'make:controller':
+                $this->createController($arguments);
+                exit(0);
+
+            case 'make:service':
+                $this->createService($arguments);
                 exit(0);
         }
 
@@ -107,51 +123,6 @@ final readonly class Application
         return $resultCode;
     }
 
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createUseCase(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify use case name.\n";
-            return;
-        }
-
-        $useCaseName = $arguments[0];
-        $directory = $this->getPathFromConfigFile('use_cases');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $useCaseName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('use_cases');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'use-case.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{useCaseName}}',
-                ],
-                [
-                    $nameSpace,
-                    $useCaseName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Use case created: $filePath\n";
-        }
-    }
-
     private function copyDeptracFile(string $newPath): void
     {
         $this->updateDeptracPath($this->baseFolder, $newPath);
@@ -198,6 +169,235 @@ final readonly class Application
     private function getBasePath(): string
     {
         return '.' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'giacomomasseron' . DIRECTORY_SEPARATOR . 'php-clean-architecture';
+    }
+
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
+    private function createEntity(array $arguments): void
+    {
+        if (empty($arguments[0])) {
+            echo "Error: specify entity name.\n";
+            return;
+        }
+
+        $entityName = $arguments[0];
+        $directory = $this->getPathFromConfigFile('entities');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $entityName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('entities');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
+
+        if (file_exists($filePath)) {
+            echo "Error: file '$filePath' already exists.\n";
+            return;
+        }
+
+        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'entity.stub');
+
+        if ($stubContent !== false) {
+            $content = str_replace(
+                [
+                    '{{namespace}}',
+                    '{{entityName}}',
+                ],
+                [
+                    $nameSpace,
+                    $entityName,
+                ],
+                $stubContent
+            );
+            file_put_contents($filePath, $content);
+
+            echo "Entity created: $filePath\n";
+        }
+    }
+
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
+    private function createUseCase(array $arguments): void
+    {
+        if (empty($arguments[0])) {
+            echo "Error: specify use case name.\n";
+            return;
+        }
+
+        $useCaseName = $arguments[0];
+        $directory = $this->getPathFromConfigFile('use_cases');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $useCaseName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('use_cases');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
+
+        if (file_exists($filePath)) {
+            echo "Error: file '$filePath' already exists.\n";
+            return;
+        }
+
+        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'use-case.stub');
+
+        if ($stubContent !== false) {
+            $content = str_replace(
+                [
+                    '{{namespace}}',
+                    '{{useCaseName}}',
+                ],
+                [
+                    $nameSpace,
+                    $useCaseName,
+                ],
+                $stubContent
+            );
+            file_put_contents($filePath, $content);
+
+            echo "Use case created: $filePath\n";
+        }
+    }
+
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
+    private function createRepository(array $arguments): void
+    {
+        if (empty($arguments[0])) {
+            echo "Error: specify repository name.\n";
+            return;
+        }
+
+        $repositoryName = $arguments[0];
+        $directory = $this->getPathFromConfigFile('repositories');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $repositoryName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('repositories');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
+
+        if (file_exists($filePath)) {
+            echo "Error: file '$filePath' already exists.\n";
+            return;
+        }
+
+        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'repository.stub');
+
+        if ($stubContent !== false) {
+            $content = str_replace(
+                [
+                    '{{namespace}}',
+                    '{{repositoryName}}',
+                ],
+                [
+                    $nameSpace,
+                    $repositoryName,
+                ],
+                $stubContent
+            );
+            file_put_contents($filePath, $content);
+
+            echo "Use case created: $filePath\n";
+        }
+    }
+
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
+    private function createController(array $arguments): void
+    {
+        if (empty($arguments[0])) {
+            echo "Error: specify repository name.\n";
+            return;
+        }
+
+        $controllerName = $arguments[0];
+        $directory = $this->getPathFromConfigFile('controllers');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $controllerName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('controllers');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
+
+        if (file_exists($filePath)) {
+            echo "Error: file '$filePath' already exists.\n";
+            return;
+        }
+
+        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'controller.stub');
+
+        if ($stubContent !== false) {
+            $content = str_replace(
+                [
+                    '{{namespace}}',
+                    '{{controllerName}}',
+                ],
+                [
+                    $nameSpace,
+                    $controllerName,
+                ],
+                $stubContent
+            );
+            file_put_contents($filePath, $content);
+
+            echo "Controller created: $filePath\n";
+        }
+    }
+
+    /**
+     * @param list<string> $arguments
+     * @return void
+     */
+    private function createService(array $arguments): void
+    {
+        if (empty($arguments[0])) {
+            echo "Error: specify service name.\n";
+            return;
+        }
+
+        $serviceName = $arguments[0];
+        // Add "Service" if it doesn't already end with "Service"
+        if (!str_ends_with($serviceName, "Service")) {
+            $serviceName .= "Service";
+        }
+        $directory = $this->getPathFromConfigFile('services');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $serviceName . '.php';
+        $nameSpace = $this->getNamespaceFromConfigFile('services');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
+
+        if (file_exists($filePath)) {
+            echo "Error: file '$filePath' already exists.\n";
+            return;
+        }
+
+        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'controller.stub');
+
+        if ($stubContent !== false) {
+            $content = str_replace(
+                [
+                    '{{namespace}}',
+                    '{{controllerName}}',
+                ],
+                [
+                    $nameSpace,
+                    $serviceName,
+                ],
+                $stubContent
+            );
+            file_put_contents($filePath, $content);
+
+            echo "Controller created: $filePath\n";
+        }
     }
 
     private function getPathFromConfigFile(string $level): string

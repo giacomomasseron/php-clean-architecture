@@ -1,0 +1,9 @@
+<?php
+
+namespace {{namespace}};
+
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\EntityInterface;
+
+final class {{entityName}} implements EntityInterface
+{
+}

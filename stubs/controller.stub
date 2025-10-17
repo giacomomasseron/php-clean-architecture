@@ -1,0 +1,9 @@
+<?php
+
+namespace {{namespace}};
+
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\ControllerInterface;
+
+final class {{controllerName}} implements ControllerInterface
+{
+}
