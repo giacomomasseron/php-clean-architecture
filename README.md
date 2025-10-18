@@ -9,7 +9,7 @@ Implements Clean Architecture as described by Robert C. Martin (Uncle Bob) here:
 [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 This is an opinionated package that defines levels of the architecture and the dependencies between them.  
-And use deptrac to check if the levels are respected.
+And uses deptrac to check if the levels are respected.
 
 - [Installation](#installation)
 - [Getting started](#Getting-started)
