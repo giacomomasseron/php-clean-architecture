@@ -27,6 +27,7 @@ And uses deptrac to check if the levels are respected.
     - [Levels](#Levels)
     - [Define a level inside the project](#Define-a-level-inside-the-project)
     - [UseCases](#UseCases)
+        - [BaseUseCase](#BaseUseCase) 
 - [CI/CD](#CICD)
 
 
@@ -207,6 +208,28 @@ To execute the UseCase, you need to call the *run* method defined in the BaseUse
 DoSomething::run($arg1, $arg2);
 ```
 
+#### BaseUseCase
+
+The package defines an abstract class for use cases: *BaseUseCase*.  
+This class defines variable for the user executing the use case:
+
+```php
+UseCaseExecutorInterface $executor
+```  
+
+You can set the executor using the following example:
+
+```php
+DoSomething::actingAs($user)->run($arg1, $arg2);
+```
+
+If you need to rollback the use case, you can override the *rollback* method:
+
+```php
+public function rollback(): void
+{
+}
+```
 
 ## CI/CD
 

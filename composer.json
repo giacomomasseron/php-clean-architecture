@@ -21,6 +21,7 @@
         }
     ],
     "require": {
+        "php": "^8.2",
         "deptrac/deptrac": "4.2.1",
         "symfony/yaml": "7.4.x-dev"
     },
