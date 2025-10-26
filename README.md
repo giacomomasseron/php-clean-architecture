@@ -41,14 +41,16 @@ composer require giacomomasseron/php-clean-architecture```
   
 After the installation, you must run the *install* command to publish the *deptrac.yaml* and the *php-clean-architecture.yaml* config files to your root folder:  
 ```bash  
-vendor/bin/php-clean-architecture install```  
+vendor/bin/php-clean-architecture install
+```  
   
 ## Getting started  
   
 To check the architecture levels in your project, use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture check```  
+vendor/bin/php-clean-architecture check
+```  
   
 ### Commands  
   
@@ -59,35 +61,40 @@ All commands read the *php-clean-architecture.yaml* config file to know where to
 To create an Entity, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:entity EntityInYourProject```  
+vendor/bin/php-clean-architecture make:entity EntityInYourProject
+```  
   
 #### Make Repository  
   
 To create a Repository, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:repository UserRepository```  
+vendor/bin/php-clean-architecture make:repository UserRepository
+```  
   
 #### Make UseCase  
   
 To create a UseCase, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:usecase DoSomethingUseCase```  
+vendor/bin/php-clean-architecture make:usecase DoSomethingUseCase
+```  
   
 #### Make Controller  
   
 To create a Controller, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:controller UserController```  
+vendor/bin/php-clean-architecture make:controller UserController
+```  
   
 #### Make Service  
   
 To create a Service, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:service ThirdyPartyServicevendor/bin/php-clean-architecture make:service ThirdyParty```  
+vendor/bin/php-clean-architecture make:service ThirdyPartyServicevendor/bin/php-clean-architecture make:service ThirdyParty
+```  
   
 In both cases, the created class will be named *ThirdyPartyService*.  
   
