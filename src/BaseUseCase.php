@@ -7,6 +7,8 @@ namespace GiacomoMasseroni\PHPCleanArchitecture;
 use BadMethodCallException;
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseExecutorInterface;
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
+use GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseCompletedEvent;
+use GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseStartedEvent;
 use GiacomoMasseroni\PHPCleanArchitecture\Exceptions\PHPCleanArchitectureException;
 
 /**
@@ -24,7 +26,7 @@ abstract class BaseUseCase implements UseCaseInterface
      */
     protected array $data = [];
 
-    final public function __construct() {}
+    final private function __construct() {}
 
     private static function getInstance(): static
     {
@@ -51,6 +53,8 @@ abstract class BaseUseCase implements UseCaseInterface
      */
     public function __invoke(mixed ...$arguments): mixed
     {
+        Dispatcher::getInstance()->dispatch(new UseCaseStartedEvent($this));
+
         try {
             $result = $this->handle(...$arguments);
         } catch (PHPCleanArchitectureException $exception) {
@@ -58,6 +62,8 @@ abstract class BaseUseCase implements UseCaseInterface
 
             throw $exception;
         }
+
+        Dispatcher::getInstance()->dispatch(new UseCaseCompletedEvent($this));
 
         return $result;
     }
@@ -80,10 +86,17 @@ abstract class BaseUseCase implements UseCaseInterface
     }
 
     /**
+     * @param string $name
+     * @param list<mixed> $arguments
+     * @return mixed
      * @throws PHPCleanArchitectureException
      */
-    final public function run(mixed ...$arguments): mixed
+    public function __call(string $name, array $arguments): mixed
     {
-        return (self::getInstance())->__invoke(...$arguments);
+        if ($name === 'run') {
+            return (self::getInstance())->__invoke(...$arguments);
+        }
+
+        throw new BadMethodCallException("Method {$name} does not exist.");
     }
 }

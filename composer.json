@@ -23,7 +23,8 @@
     "require": {
         "php": "^8.2",
         "deptrac/deptrac": "4.2.1",
-        "symfony/yaml": "7.4.x-dev"
+        "symfony/yaml": "7.4.x-dev",
+        "symfony/event-dispatcher": "^7.3"
     },
     "require-dev": {
         "pestphp/pest": "^3.0",
