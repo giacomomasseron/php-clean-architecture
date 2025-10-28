@@ -40,9 +40,11 @@ And uses deptrac to check if the levels are respected.
 You can install the package via composer:
 
 ```bash  
-composer require giacomomasseron/php-clean-architecture```  
+composer require giacomomasseron/php-clean-architecture
+```  
   
 After the installation, you must run the *install* command to publish the *deptrac.yaml* and the *php-clean-architecture.yaml* config files to your root folder:  
+
 ```bash  
 vendor/bin/php-clean-architecture install
 ```  
@@ -194,7 +196,11 @@ use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
   
 public class DoSomething extends BaseUseCase implements UseCaseInterface  
 {  
- public function handle(...$arguments): mixed { // }}  
+    public function handle(...$arguments): mixed
+    { 
+        // 
+    }
+}  
 ```  
 
 To execute the UseCase, you need to call the *run* method defined in the BaseUseCase class:
@@ -209,7 +215,9 @@ The package defines an abstract class for use cases: *BaseUseCase*.
 This class defines variable for the user executing the use case:
 
 ```php  
-UseCaseExecutorInterface $executor```   
+UseCaseExecutorInterface $executor
+```   
+
 You can set the executor using the following example:  
   
 ```php  
