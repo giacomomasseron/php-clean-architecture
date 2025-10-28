@@ -13,24 +13,27 @@ And uses deptrac to check if the levels are respected.
 
 - [Installation](#installation)
 - [Getting started](#Getting-started)
-    - [Commands](#Commands)
-        - [Make Entity](#Make-Entity)
-        - [Make Repository](#Make-Repository)
-        - [Make UseCase](#Make-UseCase)
-        - [Make Controller](#Make-Controller)
-        - [Make Service](#Make-Service)
+  - [Commands](#Commands)
+    - [Make Entity](#Make-Entity)
+    - [Make Repository](#Make-Repository)
+    - [Make UseCase](#Make-UseCase)
+    - [Make Controller](#Make-Controller)
+    - [Make Service](#Make-Service)
 - [Why Clean Architecture](#Why-Clean-Architecture)
 - [Concepts](#Concepts)
-    - [Architecture Level](#Architecture-Level)
-    - [UseCase](#UseCase)
+  - [Architecture Level](#Architecture-Level)
+  - [UseCase](#UseCase)
 - [How it works](#How-it-works)
-    - [Levels](#Levels)
-    - [Define a level inside the project](#Define-a-level-inside-the-project)
-    - [UseCases](#UseCases)
-        - [BaseUseCase](#BaseUseCase)
-        - [Events](#events)
+  - [Levels](#Levels)
+  - [Define a level inside the project](#Define-a-level-inside-the-project)
+  - [UseCases](#UseCases)
+    - [BaseUseCase](#BaseUseCase)
+    - [Events](#events)
 - [CI/CD](#CICD)
-
+- [Testing](#testing)
+- [Frameworks](#frameworks)
+  - [Laravel](#laravel)
+    - [Pulse](#pulse) 
 
 ## Installation
 
@@ -231,21 +234,49 @@ The events are:
 - UseCaseStartedEvent
 - UseCaseCompletedEvent
 
-
 ## CI/CD
 
 If you want to check the architecture levels in your CI/CD pipeline, you can use the following command:
 
 ```bash  
-vendor/bin/php-clean-architecture check```  
+vendor/bin/php-clean-architecture check
+```  
   
 This command will stop your pipeline if there are architecture violations, based on the deptrac configuration file.  
-  
-## Testing  
-  
+
+## Testing
+
 ```bash  
-composer test```  
-  
+composer test
+```  
+
+## Frameworks
+
+### Laravel
+
+[I wrote an article on how to use this package with Laravel](https://dev.to/giacomomasseron/clean-architecture-in-a-laravel-project-3oh3)
+
+#### Pulse
+
+Laravel pulse is a package that helps you to monitor the health of your Laravel application.  
+If you want to monitor use cases execution time, you can:
+
+- Create two laravel events, ```UseCaseStarted``` and ```UseCaseCompleted```
+- Create a Pulse card that listens to these events and measures the execution time.
+- Add this code to ```register``` function in ```AppServiceProvider.php``` file:
+    ```php 
+    \GiacomoMasseroni\PHPCleanArchitecture\Dispatcher::getInstance()->addListener(\GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseStartedEvent::class, function (\GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseStartedEvent $event): void {
+        // Just propagate the event to Laravel event system
+        \App\Events\UseCaseStarted::dispatch($event->useCase);
+    });
+    
+    \GiacomoMasseroni\PHPCleanArchitecture\Dispatcher::getInstance()->addListener(\GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseCompletedEvent::class, function (\GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseCompletedEvent $event): void {
+        // Just propagate the event to Laravel event system
+        \App\Events\UseCaseCompleted::dispatch($event->useCase);
+    });
+    ```
+
+
 ## Changelog  
   
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.  
