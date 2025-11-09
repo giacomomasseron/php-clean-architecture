@@ -14,6 +14,9 @@ And uses deptrac to check if the levels are respected.
 - [Installation](#installation)
 - [Getting started](#Getting-started)
   - [Commands](#Commands)
+    - [Install](#Install) 
+    - [Check](#Check)
+    - [Rector](#Rector)
     - [Make Entity](#Make-Entity)
     - [Make Repository](#Make-Repository)
     - [Make UseCase](#Make-UseCase)
@@ -43,7 +46,7 @@ You can install the package via composer:
 composer require giacomomasseron/php-clean-architecture
 ```  
   
-After the installation, you must run the *install* command to publish the *deptrac.yaml* and the *php-clean-architecture.yaml* config files to your root folder:  
+After the installation, you must run the *install* command to publish the *deptrac.yaml*, *php-clean-architecture.yaml* and *rector.php* config files to your root folder:  
 
 ```bash  
 vendor/bin/php-clean-architecture install
@@ -58,9 +61,68 @@ vendor/bin/php-clean-architecture check
 ```  
   
 ### Commands  
+
+All make commands read the *php-clean-architecture.yaml* config file to know where to put the files created and which namespace they belong to.
+
+#### Install
+
+The install command publishes needed files your root folder.  
+If you have already rector installed, you must add these lines of code in your *rector.php* file: 
+
+```php 
+return RectorConfig::configure() // This line is already present in your rector.php file
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceControllerToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                'App\Http\Controllers',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceEntityToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                'App\Entities',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceRepositoryToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                'App\Repositories',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceServiceToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                'App\Services',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceUseCaseToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                'App\UseCases',
+            ]
+        ]
+    )
+```  
+
+#### Check
+
+The check command checks the architecture levels in your project.  
+You can use it in your CI/CD pipeline to be sure that the architecture levels are respected.  
   
-All commands read the *php-clean-architecture.yaml* config file to know where to put the files created and which namespace they belong to.  
-  
+
+#### Rector  
+
+The *rector* command adds the needed interfaces to your classes based on namespaces defined in your config files.
+
 #### Make Entity  
   
 To create an Entity, you can use the following command:  
@@ -167,13 +229,7 @@ The package comes with these interfaces:
 - **RepositoryInterface**: implement this interface if the class belongs to the Repository level.
 - **UseCaseInterface**: implement this interface if the class belongs to the UseCase level.
 - **ControllerInterface**: implement this interface if the class belongs to the Controller level.
-
-For classes that belong to the Service level, the class name must contain the *Service* word.  
-For example:
-
-```php  
-final public class ThirdPartyService  
-```  
+- **ServiceInterface**: implement this interface if the class belongs to the Service level.
 
 
 If you want your controller to be part of the Controller level, you need to implement the ControllerInterface.    

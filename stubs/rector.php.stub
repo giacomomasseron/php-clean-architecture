@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+use Rector\Config\RectorConfig;
+
+return RectorConfig::configure()
+    ->withPaths([
+        __DIR__ . '/{{base_path}}',
+    ])
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceControllerToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                '{{controllers_namespace}}',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceEntityToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                '{{entities_namespace}}',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceRepositoryToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                '{{repositories_namespace}}',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceServiceToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                '{{services_namespace}}',
+            ]
+        ]
+    )
+    ->withConfiguredRule(
+        \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceUseCaseToClassesRector::class,
+        [
+            'targetNamespaces' => [
+                '{{use_cases_namespace}}',
+            ]
+        ]
+    )
+    // uncomment to reach your current PHP version
+    // ->withPhpSets()
+    ->withTypeCoverageLevel(0)
+    ->withDeadCodeLevel(0)
+    ->withCodeQualityLevel(0);

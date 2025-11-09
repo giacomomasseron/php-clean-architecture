@@ -1,0 +1,45 @@
+deptrac:
+  paths:
+    - ./{deptrac_path}
+    - ./vendor/giacomomasseron/php-clean-architecture/src
+  layers:
+    -
+      name: Entity
+      collectors:
+        -
+          type: implements
+          value: '\GiacomoMasseroni\PHPCleanArchitecture\Contracts\EntityInterface'
+    -
+      name: Repository
+      collectors:
+        -
+          type: implements
+          value: '\GiacomoMasseroni\PHPCleanArchitecture\Contracts\RepositoryInterface'
+    -
+      name: UseCase
+      collectors:
+        -
+          type: implements
+          value: '\GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface'
+    -
+      name: Controller
+      collectors:
+        -
+          type: implements
+          value: '\GiacomoMasseroni\PHPCleanArchitecture\Contracts\ControllerInterface'
+    -
+      name: Service
+      collectors:
+        -
+          type: implements
+          value: '\GiacomoMasseroni\PHPCleanArchitecture\Contracts\ServiceInterface'
+  ruleset:
+    Controller:
+      - UseCase
+    UseCase:
+      - Repository
+      - Service
+    Repository:
+      - Entity
+      - Service
+    Entity: ~

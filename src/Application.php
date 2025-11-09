@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace GiacomoMasseroni\PHPCleanArchitecture;
 
+use GiacomoMasseroni\PHPCleanArchitecture\Commands\Makes\MakeControllerCommand;
+use GiacomoMasseroni\PHPCleanArchitecture\Commands\Makes\MakeEntityCommand;
+use GiacomoMasseroni\PHPCleanArchitecture\Commands\Makes\MakeRepositoryCommand;
+use GiacomoMasseroni\PHPCleanArchitecture\Commands\Makes\MakeServiceCommand;
+use GiacomoMasseroni\PHPCleanArchitecture\Commands\Makes\MakeUseCaseCommand;
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\CommandInterface;
+use GiacomoMasseroni\PHPCleanArchitecture\Exceptions\CommandNotFoundException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 final readonly class Application
 {
-    private string $baseFolder;
+    public string $baseFolder;
 
     public function __construct()
     {
@@ -22,53 +29,40 @@ final readonly class Application
 
     /**
      * @param list<string> $argv
+     * @throws CommandNotFoundException
      */
     public function run(array $argv): int
     {
-        $command = $this->mapCommand($argv);
         $arguments = $this->getArguments($argv);
+        $command = $this->mapCommand($argv);
 
-        switch ($command) {
-            case 'install':
-                $this->install($arguments);
-                exit(0);
-
-            case 'check':
-                $output = [];
-                $result = $this->check($arguments, $output);
-                echo implode(PHP_EOL, $output);
-                exit($result);
-
-            case 'make:entity':
-                $this->createEntity($arguments);
-                exit(0);
-
-            case 'make:use-case':
-                $this->createUseCase($arguments);
-                exit(0);
-
-            case 'make:repository':
-                $this->createRepository($arguments);
-                exit(0);
-
-            case 'make:controller':
-                $this->createController($arguments);
-                exit(0);
-
-            case 'make:service':
-                $this->createService($arguments);
-                exit(0);
+        $output = [];
+        $result = $command->execute($arguments, $output);
+        if (count($output) > 0) {
+            echo implode(PHP_EOL, $output);
         }
-
-        exit(1);
+        exit($result);
     }
 
     /**
      * @param list<string> $argv
+     * @throws CommandNotFoundException
      */
-    private function mapCommand(array $argv): string
+    private function mapCommand(array $argv): CommandInterface
     {
-        return $argv[1] ?? '';
+        return match ($argv[1]) {
+            'install' => new Commands\InstallCommand($this),
+            'check' => new Commands\CheckCommand($this),
+            'rector' => new Commands\RectorCommand($this),
+            'make:entity' => new MakeEntityCommand($this),
+            'make:use-case' => new MakeUseCaseCommand($this),
+            'make:repository' => new MakeRepositoryCommand($this),
+            'make:controller' => new MakeControllerCommand($this),
+            'make:service' => new MakeServiceCommand($this),
+            default => throw new CommandNotFoundException($argv[1]),
+        };
+
+        //return $argv[1] ?? '';
     }
 
     /**
@@ -82,81 +76,10 @@ final readonly class Application
         }, array_slice($argv, 2));
     }
 
-    /**
-     * @param list<string> $arguments
-     */
-    private function install(array $arguments): void
-    {
-        echo "Installing PHP Clean Architecture...\n";
-
-        $newDeptracFilePath = '.' . DIRECTORY_SEPARATOR . 'deptrac.yaml';
-
-        if (file_exists($newDeptracFilePath) && ! $this->readYesNo()) {
-            echo "deptrac.yaml file was not overwritten.\n";
-        } else {
-            echo "Copying deptrac.yaml file to your root directory.\n";
-
-            $this->copyDeptracFile($newDeptracFilePath);
-        }
-
-        $newConfigFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
-
-        if (file_exists($newConfigFilePath) && ! $this->readYesNo()) {
-            echo "php-clean-architecture.yaml file was not overwritten.\n";
-        } else {
-            echo "Copying php-clean-architecture.yaml file to your root directory.\n";
-
-            $this->copyConfigFile($newConfigFilePath);
-        }
-
-        echo "Done! You can now run 'vendor/bin/php-clean-architecture check' to check your architecture.\n";
-    }
-
-    /**
-     * @param list<string> $arguments
-     * @param list<mixed> $output
-     * @return int
-     */
-    private function check(array $arguments, array &$output): int
-    {
-        exec('vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'deptrac' . (in_array('v', $arguments) ? ' -v' : ''), $output, $resultCode);
-        return $resultCode;
-    }
-
-    private function copyDeptracFile(string $newPath): void
-    {
-        $this->updateDeptracPath($this->baseFolder, $newPath);
-    }
-
-    private function updateDeptracPath(string $deptracPath, string $newPath): void
-    {
-        $filePath = $this->getBasePath() . DIRECTORY_SEPARATOR . 'deptrac.yaml';
-        $content = file_get_contents($filePath);
-        if ($content !== false) {
-            $newContent = str_replace('{deptrac_path}', $deptracPath, $content);
-            file_put_contents($newPath, $newContent);
-        }
-    }
-
-    private function copyConfigFile(string $newPath): void
-    {
-        $this->updateConfigPath($this->baseFolder, $newPath);
-    }
-
-    private function updateConfigPath(string $deptracPath, string $newPath): void
-    {
-        $filePath = $this->getBasePath() . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
-        $content = file_get_contents($filePath);
-        if ($content !== false) {
-            $newContent = str_replace(['{base_folder}', '{base_namespace}'], [$deptracPath, ucfirst($deptracPath)], $content);
-            file_put_contents($newPath, $newContent);
-        }
-    }
-
-    private function readYesNo(): bool
+    public function readYesNo(string $message): bool
     {
         while (true) {
-            $input = strtolower(trim((string) readline("A deptrac.yaml file already exists. Do you want to overwrite it? (y/n): ")));
+            $input = strtolower(trim((string) readline($message)));
 
             if ($input === 'y' || $input === 'n') {
                 return $input === 'y';
@@ -166,241 +89,12 @@ final readonly class Application
         }
     }
 
-    private function getBasePath(): string
+    public function getBasePath(): string
     {
         return '.' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'giacomomasseron' . DIRECTORY_SEPARATOR . 'php-clean-architecture';
     }
 
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createEntity(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify entity name.\n";
-            return;
-        }
-
-        $entityName = $arguments[0];
-        $directory = $this->getPathFromConfigFile('entities');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $entityName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('entities');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'entity.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{entityName}}',
-                ],
-                [
-                    $nameSpace,
-                    $entityName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Entity created: $filePath\n";
-        }
-    }
-
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createUseCase(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify use case name.\n";
-            return;
-        }
-
-        $useCaseName = $arguments[0];
-        $directory = $this->getPathFromConfigFile('use_cases');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $useCaseName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('use_cases');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'use-case.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{useCaseName}}',
-                ],
-                [
-                    $nameSpace,
-                    $useCaseName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Use case created: $filePath\n";
-        }
-    }
-
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createRepository(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify repository name.\n";
-            return;
-        }
-
-        $repositoryName = $arguments[0];
-        $directory = $this->getPathFromConfigFile('repositories');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $repositoryName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('repositories');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'repository.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{repositoryName}}',
-                ],
-                [
-                    $nameSpace,
-                    $repositoryName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Use case created: $filePath\n";
-        }
-    }
-
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createController(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify repository name.\n";
-            return;
-        }
-
-        $controllerName = $arguments[0];
-        $directory = $this->getPathFromConfigFile('controllers');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $controllerName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('controllers');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'controller.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{controllerName}}',
-                ],
-                [
-                    $nameSpace,
-                    $controllerName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Controller created: $filePath\n";
-        }
-    }
-
-    /**
-     * @param list<string> $arguments
-     * @return void
-     */
-    private function createService(array $arguments): void
-    {
-        if (empty($arguments[0])) {
-            echo "Error: specify service name.\n";
-            return;
-        }
-
-        $serviceName = $arguments[0];
-        // Add "Service" if it doesn't already end with "Service"
-        if (!str_ends_with($serviceName, "Service")) {
-            $serviceName .= "Service";
-        }
-        $directory = $this->getPathFromConfigFile('services');
-        $filePath = $directory . DIRECTORY_SEPARATOR . $serviceName . '.php';
-        $nameSpace = $this->getNamespaceFromConfigFile('services');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0o777, true);
-        }
-
-        if (file_exists($filePath)) {
-            echo "Error: file '$filePath' already exists.\n";
-            return;
-        }
-
-        $stubContent = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'controller.stub');
-
-        if ($stubContent !== false) {
-            $content = str_replace(
-                [
-                    '{{namespace}}',
-                    '{{controllerName}}',
-                ],
-                [
-                    $nameSpace,
-                    $serviceName,
-                ],
-                $stubContent
-            );
-            file_put_contents($filePath, $content);
-
-            echo "Controller created: $filePath\n";
-        }
-    }
-
-    private function getPathFromConfigFile(string $level): string
+    public function getPathFromConfigFile(string $level): string
     {
         $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
         if (file_exists($configFilePath)) {
@@ -461,7 +155,7 @@ final readonly class Application
         return '';
     }
 
-    private function getNamespaceFromConfigFile(string $level): string
+    public function getNamespaceFromConfigFile(string $level): string
     {
         $configFilePath = '.' . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
         if (file_exists($configFilePath)) {
