@@ -135,56 +135,56 @@ final class InstallCommand extends BaseCommand implements CommandInterface
         $entitiesNamespace = $this->app->getNamespaceFromConfigFile(LevelsEnum::ENTITIES->value());
         $servicesNamespace = $this->app->getNamespaceFromConfigFile(LevelsEnum::SERVICES->value());
 
-        echo "\n"."Check your rector.php file and in case, add these rules to it:\n";
+        echo "\n" . "Check your rector.php file and in case, add these rules to it:\n";
         echo "\033[00;32m ";
         echo <<<EOT
-----------------------------------------------------------------
-|
-| Code to add to the rector.php file
-|
------------------------------------------------------------------
-->withConfiguredRule(
-    \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceControllerToClassesRector::class,
-    [
-        'targetNamespaces' => [
-            '{$controllersNamespace}',
-        ]
-    ]
-)
-->withConfiguredRule(
-    \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceEntityToClassesRector::class,
-    [
-        'targetNamespaces' => [
-            '{$entitiesNamespace}',
-        ]
-    ]
-)
-->withConfiguredRule(
-    \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceRepositoryToClassesRector::class,
-    [
-        'targetNamespaces' => [
-            '{$repositoriesNamespace}',
-        ]
-    ]
-)
-->withConfiguredRule(
-    \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceServiceToClassesRector::class,
-    [
-        'targetNamespaces' => [
-            '{$servicesNamespace}',
-        ]
-    ]
-)
-->withConfiguredRule(
-    \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceUseCaseToClassesRector::class,
-    [
-        'targetNamespaces' => [
-            '{$useCasesNamespace}',
-        ]
-    ]
-)
+            ----------------------------------------------------------------
+            |
+            | Code to add to the rector.php file
+            |
+            -----------------------------------------------------------------
+            ->withConfiguredRule(
+                \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceControllerToClassesRector::class,
+                [
+                    'targetNamespaces' => [
+                        '{$controllersNamespace}',
+                    ]
+                ]
+            )
+            ->withConfiguredRule(
+                \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceEntityToClassesRector::class,
+                [
+                    'targetNamespaces' => [
+                        '{$entitiesNamespace}',
+                    ]
+                ]
+            )
+            ->withConfiguredRule(
+                \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceRepositoryToClassesRector::class,
+                [
+                    'targetNamespaces' => [
+                        '{$repositoriesNamespace}',
+                    ]
+                ]
+            )
+            ->withConfiguredRule(
+                \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceServiceToClassesRector::class,
+                [
+                    'targetNamespaces' => [
+                        '{$servicesNamespace}',
+                    ]
+                ]
+            )
+            ->withConfiguredRule(
+                \GiacomoMasseroni\PHPCleanArchitecture\Rector\Rules\AddPHPCleanArchitectureInterfaceUseCaseToClassesRector::class,
+                [
+                    'targetNamespaces' => [
+                        '{$useCasesNamespace}',
+                    ]
+                ]
+            )
 
-EOT;
+            EOT;
         echo "\033[0m";
     }
 }
