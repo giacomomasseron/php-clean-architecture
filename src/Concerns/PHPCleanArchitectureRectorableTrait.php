@@ -48,8 +48,6 @@ trait PHPCleanArchitectureRectorableTrait
             return null;
         }
 
-        // Apply your transformation here
-        // This is just an example - replace with your actual logic
         return $this->transformClass($node, $interfaceNamespace);
     }
 
