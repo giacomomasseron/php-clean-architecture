@@ -48,7 +48,9 @@ trait PHPCleanArchitectureRectorableTrait
             return null;
         }
 
-        return $this->transformClass($node, $interfaceNamespace);
+        $node->implements[] = new Node\Name\FullyQualified($interfaceNamespace);
+
+        return $node;
     }
 
     /**
@@ -82,12 +84,5 @@ trait PHPCleanArchitectureRectorableTrait
         }
 
         return false;
-    }
-
-    private function transformClass(Class_ $node, string $interfaceNamespace): Node
-    {
-        $node->implements[] = new Node\Name\FullyQualified($interfaceNamespace);
-
-        return $node;
     }
 }
