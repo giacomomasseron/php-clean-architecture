@@ -160,7 +160,8 @@ vendor/bin/php-clean-architecture make:controller UserController
 To create a Service, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:service ThirdyPartyServicevendor/bin/php-clean-architecture make:service ThirdyParty
+vendor/bin/php-clean-architecture make:service ThirdyPartyService  
+vendor/bin/php-clean-architecture make:service ThirdyParty
 ```  
   
 In both cases, the created class will be named *ThirdyPartyService*.  
