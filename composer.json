@@ -22,7 +22,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "deptrac/deptrac": "4.2.1",
+        "deptrac/deptrac": "4.6.0",
         "symfony/yaml": "v7.4.1",
         "symfony/event-dispatcher": "^7.3",
         "rector/rector": "^2.0"
