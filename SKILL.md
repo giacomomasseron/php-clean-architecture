@@ -1,3 +1,19 @@
+---
+name: php-clean-architecture
+description: >
+  Teaches AI agents correct patterns for using the giacomomasseron/php-clean-architecture
+  PHP package. Use when working with this package to scaffold or review Entities,
+  Repositories, UseCases, Controllers, and Services; invoke UseCases via the static
+  run() helper; listen to UseCase events via the Dispatcher singleton; run CLI commands
+  (install, check, rector, make:entity, make:repository, make:use-case, make:controller,
+  make:service); configure php-clean-architecture.yaml; or detect and fix layer-dependency
+  violations caught by deptrac.
+license: MIT
+compatibility: Requires PHP project using composer package giacomomasseron/php-clean-architecture
+metadata:
+  author: giacomo masseroni
+---
+
 # AI Training Guide for `php-clean-architecture`
 
 This file teaches AI agents the correct patterns for using this package in a PHP project.  
