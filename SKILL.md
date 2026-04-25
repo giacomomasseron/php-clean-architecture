@@ -14,13 +14,6 @@ metadata:
   author: giacomo masseroni
 ---
 
-# AI Training Guide for `php-clean-architecture`
-
-This file teaches AI agents the correct patterns for using this package in a PHP project.  
-**Always follow these rules when generating or editing code in a project that depends on `giacomomasseron/php-clean-architecture`.**
-
----
-
 ## 1. Layer Rules (never violate these)
 
 Layers can only depend on layers **below** them in this chain:
