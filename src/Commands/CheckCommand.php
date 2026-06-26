@@ -10,7 +10,7 @@ final class CheckCommand extends BaseCommand implements CommandInterface
 {
     /**
      * @param list<string> $arguments
-     * @param list<mixed> &$output
+     * @param list<string> &$output
      * @return mixed
      */
     public function execute(array $arguments, array &$output): mixed

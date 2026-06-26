@@ -8,7 +8,7 @@ final class RectorCommand extends MakeCommand
 {
     /**
      * @param list<string> $arguments
-     * @param list<mixed> &$output
+     * @param list<string> &$output
      * @return mixed
      */
     public function execute(array $arguments, array &$output): mixed

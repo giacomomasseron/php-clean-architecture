@@ -10,7 +10,7 @@ abstract class MakeCommand extends BaseCommand implements CommandInterface
 {
     /**
      * @param list<string> $arguments
-     * @param list<mixed> &$output
+     * @param list<string> &$output
      * @return mixed
      */
     abstract public function execute(array $arguments, array &$output): mixed;
