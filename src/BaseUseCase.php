@@ -18,9 +18,6 @@ abstract class BaseUseCase implements UseCaseInterface
 {
     public ?UseCaseExecutorInterface $executor = null;
 
-    /** @var static $instance */
-    //private static BaseUseCase $instance;
-
     /**
      * @var list<mixed>
      */
@@ -30,12 +27,6 @@ abstract class BaseUseCase implements UseCaseInterface
 
     private static function getInstance(): static
     {
-        /*if (!isset(self::$instance)) {
-            self::$instance = new static();
-        }
-
-        return self::$instance;*/
-
         return new static();
     }
 
