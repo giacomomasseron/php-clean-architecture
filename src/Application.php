@@ -18,23 +18,39 @@ final readonly class Application
 {
     public string $baseFolder;
 
+    public string $baseNamespace;
+
     public function __construct()
     {
-        if (file_exists('.src/')) {
+        if (is_dir('.' . DIRECTORY_SEPARATOR . 'src')) {
             $this->baseFolder = 'src';
         } else {
             $this->baseFolder = 'app';
         }
+
+        $this->baseNamespace = $this->getNamespaceFromComposerFile($this->baseFolder) ?? ucfirst($this->baseFolder);
     }
 
     /**
      * @param list<string> $argv
-     * @throws CommandNotFoundException
      */
     public function run(array $argv): int
     {
+        if (!isset($argv[1])) {
+            fwrite(STDERR, $this->getUsage());
+
+            return 1;
+        }
+
         $arguments = $this->getArguments($argv);
-        $command = $this->mapCommand($argv);
+
+        try {
+            $command = $this->mapCommand($argv);
+        } catch (CommandNotFoundException $exception) {
+            fwrite(STDERR, $exception->getMessage() . PHP_EOL . PHP_EOL . $this->getUsage());
+
+            return 1;
+        }
 
         $output = [];
         $result = $command->execute($arguments, $output);
@@ -65,6 +81,23 @@ final readonly class Application
         //return $argv[1] ?? '';
     }
 
+    private function getUsage(): string
+    {
+        return implode(PHP_EOL, [
+            'Usage: vendor/bin/php-clean-architecture <command> [arguments]',
+            '',
+            'Available commands:',
+            '  install          Publish the configuration files to your root folder',
+            '  check            Check the architecture levels in your project',
+            '  rector           Add the needed interfaces to your classes',
+            '  make:entity      Create an Entity',
+            '  make:repository  Create a Repository',
+            '  make:use-case    Create a UseCase',
+            '  make:controller  Create a Controller',
+            '  make:service     Create a Service',
+        ]) . PHP_EOL;
+    }
+
     /**
      * @param list<string> $argv
      * @return list<string>
@@ -87,6 +120,34 @@ final readonly class Application
 
             echo "Invalid input. Please enter 'y' or 'n'.\n";
         }
+    }
+
+    /**
+     * Find the PSR-4 namespace the project's composer.json maps to the given folder
+     */
+    private function getNamespaceFromComposerFile(string $folder): ?string
+    {
+        $composerFilePath = '.' . DIRECTORY_SEPARATOR . 'composer.json';
+        if (!file_exists($composerFilePath)) {
+            return null;
+        }
+
+        $composer = json_decode((string) file_get_contents($composerFilePath), true);
+        $autoload = is_array($composer) ? ($composer['autoload'] ?? null) : null;
+        $psr4 = is_array($autoload) ? ($autoload['psr-4'] ?? null) : null;
+        if (!is_array($psr4)) {
+            return null;
+        }
+
+        foreach ($psr4 as $namespace => $paths) {
+            foreach ((array) $paths as $path) {
+                if (is_string($path) && trim($path, './\\') === $folder) {
+                    return rtrim((string) $namespace, '\\');
+                }
+            }
+        }
+
+        return null;
     }
 
     public function getBasePath(): string

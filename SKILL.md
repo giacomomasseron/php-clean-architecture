@@ -203,7 +203,8 @@ php-clean-architecture:
         namespace: 'App\Services'
 ```
 
-`{base_folder}` defaults to `app` (or `src` if `.src/` directory exists) when auto-detected by `Application`.
+`{base_folder}` defaults to `app` (or `src` if a `src/` directory exists) when auto-detected by `Application`.
+`{base_namespace}` is the PSR-4 namespace mapped to that folder in the project's `composer.json` (falls back to the capitalized folder name).
 
 ---
 

@@ -82,7 +82,7 @@ final class InstallCommand extends BaseCommand implements CommandInterface
         $filePath = $this->app->getBasePath() . DIRECTORY_SEPARATOR . 'php-clean-architecture.yaml';
         $content = file_get_contents($filePath);
         if ($content !== false) {
-            $newContent = str_replace(['{base_folder}', '{base_namespace}'], [$deptracPath, ucfirst($deptracPath)], $content);
+            $newContent = str_replace(['{base_folder}', '{base_namespace}'], [$deptracPath, $this->app->baseNamespace], $content);
             file_put_contents($newPath, $newContent);
         }
     }

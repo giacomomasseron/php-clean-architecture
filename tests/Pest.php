@@ -41,7 +41,77 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-/*function something()
+/**
+ * Run the php-clean-architecture binary in a separate process.
+ *
+ * @param list<string> $arguments
+ * @return array{exitCode: int, stdout: string, stderr: string}
+ */
+function runCli(array $arguments, ?string $workingDirectory = null): array
 {
-    // ..
-}*/
+    $process = proc_open(
+        [PHP_BINARY, '-d', 'error_reporting=-1', '-d', 'display_errors=stderr', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'php-clean-architecture', ...$arguments],
+        [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+        $pipes,
+        $workingDirectory ?? dirname(__DIR__),
+    );
+
+    if (!is_resource($process)) {
+        throw new RuntimeException('Unable to start the php-clean-architecture process');
+    }
+
+    $stdout = (string) stream_get_contents($pipes[1]);
+    $stderr = (string) stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+
+    return ['exitCode' => proc_close($process), 'stdout' => $stdout, 'stderr' => $stderr];
+}
+
+/**
+ * Create a temporary project with the package in its vendor folder, removed when the tests end.
+ *
+ * @param array<string, string> $files File contents keyed by their path relative to the project root
+ */
+function createProject(array $files): string
+{
+    $project = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-clean-architecture-' . bin2hex(random_bytes(8));
+    $package = $project . '/vendor/giacomomasseron/php-clean-architecture';
+
+    mkdir($package . '/stubs', 0o777, true);
+    copy(dirname(__DIR__) . '/php-clean-architecture.yaml', $package . '/php-clean-architecture.yaml');
+    foreach (glob(dirname(__DIR__) . '/stubs/*.stub') ?: [] as $stub) {
+        copy($stub, $package . '/stubs/' . basename($stub));
+    }
+
+    foreach ($files as $path => $content) {
+        $filePath = $project . '/' . $path;
+        if (!is_dir(dirname($filePath))) {
+            mkdir(dirname($filePath), 0o777, true);
+        }
+        file_put_contents($filePath, $content);
+    }
+
+    register_shutdown_function(fn () => removeDirectory($project));
+
+    return $project;
+}
+
+function removeDirectory(string $directory): void
+{
+    $items = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST,
+    );
+
+    /** @var SplFileInfo $item */
+    foreach ($items as $item) {
+        if ($item->isDir()) {
+            rmdir($item->getPathname());
+        } else {
+            unlink($item->getPathname());
+        }
+    }
+
+    rmdir($directory);
+}

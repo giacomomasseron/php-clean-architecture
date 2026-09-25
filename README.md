@@ -144,7 +144,7 @@ vendor/bin/php-clean-architecture make:repository UserRepository
 To create a UseCase, you can use the following command:  
   
 ```bash  
-vendor/bin/php-clean-architecture make:usecase DoSomethingUseCase
+vendor/bin/php-clean-architecture make:use-case DoSomethingUseCase
 ```  
   
 #### Make Controller  

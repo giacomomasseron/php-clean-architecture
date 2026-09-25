@@ -23,8 +23,8 @@
     "require": {
         "php": "^8.2",
         "deptrac/deptrac": "^4.6",
-        "symfony/yaml": "^7.4.12",
-        "symfony/event-dispatcher": "^7.3",
+        "symfony/yaml": "^7.4.12|^8.0",
+        "symfony/event-dispatcher": "^7.3|^8.0",
         "rector/rector": "^2.0"
     },
     "require-dev": {
