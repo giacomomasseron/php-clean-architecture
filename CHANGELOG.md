@@ -2,6 +2,15 @@
 
 All notable changes to `php-clean-architecture` will be documented in this file.
 
+## v2.1.1 - 2026-11-02
+
+### Fixes
+
+- A use case with a private or protected constructor (without required parameters) can be run with the static `run()` and `actingAs()`: they threw `ReflectionException: Access to non-public constructor`
+- README and SKILL.md: the `CreateUser` example checks its argument before passing it to the typed method, so it passes PHPStan level 9 and max
+- README and SKILL.md: with phpstan-strict-rules, call an injected use case as `($useCase)(...)`, because `$useCase->run(...)` is reported as `staticMethod.dynamicCall`
+- README and SKILL.md: `UseCaseNotStaticallyRunnableException` reports a mistake in your code; it triggers the calling use case's `rollback()` and should not become a 4xx response
+
 ## v2.1.0 - 2026-11-02
 
 ### Features
