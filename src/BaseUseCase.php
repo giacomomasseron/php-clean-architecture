@@ -72,7 +72,7 @@ abstract class BaseUseCase implements UseCaseInterface
     public static function __callStatic(string $name, array $arguments): mixed
     {
         if ($name === 'run') {
-            return (self::getInstance())->run(...$arguments);
+            return self::getInstance()->__invoke(...$arguments);
         }
 
         throw new BadMethodCallException("Method {$name} does not exist.");
@@ -87,7 +87,7 @@ abstract class BaseUseCase implements UseCaseInterface
     public function __call(string $name, array $arguments): mixed
     {
         if ($name === 'run') {
-            return (self::getInstance())->__invoke(...$arguments);
+            return $this->__invoke(...$arguments);
         }
 
         throw new BadMethodCallException("Method {$name} does not exist.");
