@@ -115,3 +115,8 @@ test('an exception thrown by handle rolls back the use case instance that was ru
 test('a use case can run another use case statically from handle', function () {
     expect(BaseUseCaseTestRunsAnotherUseCase::run('outer'))->toBe(['inner', 'outer']);
 });
+
+test('a use case without its own constructor can be instantiated', function () {
+    expect((new ReflectionClass(EchoArgumentsUseCase::class))->isInstantiable())->toBeTrue();
+    expect((new EchoArgumentsUseCase())->run('a'))->toBe(['a']);
+});

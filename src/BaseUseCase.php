@@ -10,6 +10,8 @@ use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
 use GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseCompletedEvent;
 use GiacomoMasseroni\PHPCleanArchitecture\Events\UseCaseStartedEvent;
 use GiacomoMasseroni\PHPCleanArchitecture\Exceptions\PHPCleanArchitectureException;
+use GiacomoMasseroni\PHPCleanArchitecture\Exceptions\UseCaseNotStaticallyRunnableException;
+use ReflectionClass;
 
 /**
  * @method static mixed run(mixed ...$arguments)
@@ -23,15 +25,24 @@ abstract class BaseUseCase implements UseCaseInterface
      */
     protected array $data = [];
 
-    final private function __construct() {}
-
+    /**
+     * @throws UseCaseNotStaticallyRunnableException
+     */
     private static function getInstance(): static
     {
-        return new static();
+        $class = new ReflectionClass(static::class);
+
+        if ($class->getConstructor()?->getNumberOfRequiredParameters() > 0) {
+            throw new UseCaseNotStaticallyRunnableException(static::class);
+        }
+
+        return $class->newInstance();
     }
 
     /**
      * Set the user executing the use case
+     *
+     * @throws UseCaseNotStaticallyRunnableException
      */
     public static function actingAs(?UseCaseExecutorInterface $user): static
     {
