@@ -25,6 +25,8 @@ abstract class BaseUseCase implements UseCaseInterface
      */
     protected array $data = [];
 
+    private bool $running = false;
+
     /**
      * @throws UseCaseNotStaticallyRunnableException
      */
@@ -59,12 +61,17 @@ abstract class BaseUseCase implements UseCaseInterface
     {
         Dispatcher::getInstance()->dispatch(new UseCaseStartedEvent($this));
 
+        $wasRunning = $this->running;
+        $this->running = true;
+
         try {
             $result = $this->handle(...$arguments);
         } catch (PHPCleanArchitectureException $exception) {
             $this->rollback();
 
             throw $exception;
+        } finally {
+            $this->running = $wasRunning;
         }
 
         Dispatcher::getInstance()->dispatch(new UseCaseCompletedEvent($this));
@@ -98,7 +105,10 @@ abstract class BaseUseCase implements UseCaseInterface
     public function __call(string $name, array $arguments): mixed
     {
         if ($name === 'run') {
-            return $this->__invoke(...$arguments);
+            // X::run() inside X::handle() lands here too: it gets its own instance, as a static run() does
+            $useCase = $this->running ? self::getInstance() : $this;
+
+            return $useCase->__invoke(...$arguments);
         }
 
         throw new BadMethodCallException("Method {$name} does not exist.");
