@@ -3,11 +3,11 @@ name: php-clean-architecture
 description: >
   Teaches AI agents correct patterns for using the giacomomasseron/php-clean-architecture
   PHP package. Use when working with this package to scaffold or review Entities,
-  Repositories, UseCases, Controllers, and Services; invoke UseCases via the static
-  run() helper; listen to UseCase events via the Dispatcher singleton; run CLI commands
-  (install, check, rector, make:entity, make:repository, make:use-case, make:controller,
-  make:service); configure php-clean-architecture.yaml; or detect and fix layer-dependency
-  violations caught by deptrac.
+  Repositories, UseCases, Controllers, and Services; invoke UseCases with run(), called
+  statically or on an injected instance; listen to UseCase events via the Dispatcher
+  singleton; run CLI commands (install, check, rector, make:entity, make:repository,
+  make:use-case, make:controller, make:service); configure php-clean-architecture.yaml;
+  or detect and fix layer-dependency violations caught by deptrac.
 license: MIT
 compatibility: Requires PHP project using composer package giacomomasseron/php-clean-architecture
 metadata:
@@ -74,19 +74,33 @@ use GiacomoMasseroni\PHPCleanArchitecture\Contracts\RepositoryInterface;
 final class UserRepository implements RepositoryInterface
 {
     public function findById(int $id): User { /* ... */ }
+
+    public function create(string $name): User { /* ... */ }
 }
 ```
 
 ### UseCase — **always extend `BaseUseCase` AND implement `UseCaseInterface`**
+
+`handle()` must keep the exact signature `handle(mixed ...$arguments): mixed` (a typed `handle(string $name): User` is a fatal error); forward to a typed private method. Dependencies go in the constructor:
+
 ```php
 use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
 
 final class CreateUser extends BaseUseCase implements UseCaseInterface
 {
-    public function handle(string $name): User
+    public function __construct(private readonly UserRepository $users) {}
+
+    public function handle(mixed ...$arguments): mixed
+    {
+        return $this->create(...$arguments);
+    }
+
+    // mixed, not User: a UseCase must not depend on an Entity (deptrac rule)
+    private function create(string $name): mixed
     {
         // business logic here
+        return $this->users->create($name);
     }
 
     // optional: called automatically on PHPCleanArchitectureException
@@ -94,15 +108,17 @@ final class CreateUser extends BaseUseCase implements UseCaseInterface
 }
 ```
 
-### Controller
+### Controller — receives the UseCase by injection
 ```php
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\ControllerInterface;
 
 final class UserController implements ControllerInterface
 {
+    public function __construct(private readonly CreateUser $createUser) {}
+
     public function store(string $name): void
     {
-        $user = CreateUser::run($name);
+        $user = $this->createUser->run($name);
     }
 }
 ```
@@ -121,17 +137,35 @@ final class StripeService implements ServiceInterface
 
 ## 4. Invoking a UseCase
 
-Always call via the static `run()` helper — do **not** instantiate directly:
+Always go through `run()` — **never** call `handle()` directly.
+
+**UseCase without constructor dependencies** — call the static `run()` helper:
 
 ```php
 // simple call
-$result = CreateUser::run($name);
+$result = CalculateTotal::run($items);
 
 // with executor (e.g., authenticated user)
-$result = CreateUser::actingAs($currentUser)->run($name);
+$result = CalculateTotal::actingAs($currentUser)->run($items);
 ```
 
-`run()` internally calls `__invoke()` which fires `UseCaseStartedEvent` → `handle()` → `UseCaseCompletedEvent`.  
+**UseCase with constructor dependencies** — let the container build it, inject it (see the Controller in §3), and call `run()` on the instance:
+
+```php
+$result = $this->createUser->run($name);
+$result = ($this->createUser)($name); // same as run()
+```
+
+Static `CreateUser::run()` and `CreateUser::actingAs()` throw `UseCaseNotStaticallyRunnableException` when the UseCase has required constructor parameters. `actingAs()` is static, so on an injected instance set the public `executor` property, or pass the actor as an argument:
+
+```php
+$this->createUser->executor = $currentUser;
+$result = $this->createUser->run($name);
+```
+
+The executor stays set on that instance: if the container shares it (Symfony services are shared by default), pass the actor as an argument instead.
+
+`run()` (static or on an instance) calls `__invoke()`, which fires `UseCaseStartedEvent` → `handle()` → `UseCaseCompletedEvent` on that same instance.  
 `rollback()` is only called when `PHPCleanArchitectureException` is thrown from `handle()`.
 
 ---
@@ -213,7 +247,9 @@ php-clean-architecture:
 | ❌ Wrong | ✅ Correct |
 |---|---|
 | `make:usecase` | `make:use-case` |
-| `new CreateUser()->handle(...)` | `CreateUser::run(...)` |
+| `$useCase->handle(...)`: calling `handle()` directly skips the events and `rollback()` | `$useCase->run(...)` |
+| `public function handle(string $name): User`: fatal, it must be compatible with `UseCaseInterface::handle(mixed ...$arguments): mixed` | `handle(mixed ...$arguments): mixed` forwarding to a typed private method |
+| `CreateUser::run(...)` / `CreateUser::actingAs(...)` on a UseCase with required constructor parameters: throws `UseCaseNotStaticallyRunnableException` | Inject the UseCase and call `$this->createUser->run(...)` |
 | UseCase importing a Controller | Reverse the call direction |
 | Entity importing a Repository | Repositories depend on Entities, not the reverse |
 | `new Dispatcher()` | `Dispatcher::getInstance()` |

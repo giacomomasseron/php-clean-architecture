@@ -31,6 +31,7 @@ And uses deptrac to check if the levels are respected.
   - [Define a level inside the project](#Define-a-level-inside-the-project)
   - [UseCases](#UseCases)
     - [BaseUseCase](#BaseUseCase)
+    - [Dependency injection](#dependency-injection)
     - [Events](#events)
 - [CI/CD](#CICD)
 - [Testing](#testing)
@@ -239,7 +240,7 @@ For example:
 ```php  
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\ControllerInterface;  
   
-public class YourController implements ControllerInterface  
+final class YourController implements ControllerInterface  
 ```  
 
 ### UseCases
@@ -251,7 +252,7 @@ For example:
 use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;  
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;  
   
-public class DoSomething extends BaseUseCase implements UseCaseInterface  
+final class DoSomething extends BaseUseCase implements UseCaseInterface  
 {  
     public function handle(...$arguments): mixed
     { 
@@ -265,6 +266,8 @@ To execute the UseCase, you need to call the *run* method defined in the BaseUse
 ```php  
 DoSomething::run($arg1, $arg2);  
 ```  
+
+If the UseCase has dependencies, declare them in its constructor and call *run* on the instance built by your container, see [Dependency injection](#dependency-injection).
 
 #### BaseUseCase
 
@@ -288,6 +291,60 @@ public function rollback(): void
 {  
 }  
 ```  
+
+#### Dependency injection
+
+A UseCase can declare its dependencies in its constructor, so your container (Laravel, Symfony, ...) builds it and injects it where it is needed:
+
+```php
+use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
+
+final class CreateUser extends BaseUseCase implements UseCaseInterface
+{
+    public function __construct(private readonly UserRepository $users) {}
+
+    public function handle(mixed ...$arguments): mixed
+    {
+        return $this->create(...$arguments);
+    }
+
+    // mixed, not User: the UseCase level must not depend on the Entity level
+    private function create(string $name): mixed
+    {
+        return $this->users->create($name);
+    }
+}
+```
+
+The controller receives the UseCase in its constructor and calls *run* on it:
+
+```php
+use GiacomoMasseroni\PHPCleanArchitecture\Contracts\ControllerInterface;
+
+final class UserController implements ControllerInterface
+{
+    public function __construct(private readonly CreateUser $createUser) {}
+
+    public function store(string $name): void
+    {
+        $user = $this->createUser->run($name);
+    }
+}
+```
+
+Calling *run* on the instance, or invoking it (`($this->createUser)($name)`), dispatches the same [events](#events) and calls *rollback* the same way as the static call.
+
+The rules:
+
+- The static `DoSomething::run()` and `DoSomething::actingAs()` only work when the UseCase has no required constructor parameters. Otherwise they throw `UseCaseNotStaticallyRunnableException`: build the UseCase with your container and call *run* on the instance.
+- On an injected instance, set the public `executor` property, or pass the actor as an argument of *run*:
+    ```php
+    $this->createUser->executor = $currentUser;
+    $user = $this->createUser->run($name);
+    ```
+  The executor stays set on that instance: if your container shares it (Symfony services are shared by default), pass the actor as an argument instead.
+- Never call *handle* directly: it skips the events and the rollback.
 
 #### Events
 
