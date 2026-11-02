@@ -301,6 +301,7 @@ A UseCase can declare its dependencies in its constructor, so your container (La
 ```php
 use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
+use InvalidArgumentException;
 
 final class CreateUser extends BaseUseCase implements UseCaseInterface
 {
@@ -308,7 +309,14 @@ final class CreateUser extends BaseUseCase implements UseCaseInterface
 
     public function handle(mixed ...$arguments): mixed
     {
-        return $this->create(...$arguments);
+        $name = $arguments[0] ?? null;
+
+        // the arguments arrive as mixed: check them before passing them to the typed method
+        if (!is_string($name)) {
+            throw new InvalidArgumentException('CreateUser expects the user name');
+        }
+
+        return $this->create($name);
     }
 
     // mixed, not User: the UseCase level must not depend on the Entity level
@@ -337,9 +345,12 @@ final class UserController implements ControllerInterface
 
 Calling *run* on the instance, or invoking it (`($this->createUser)($name)`), dispatches the same [events](#events) and calls *rollback* the same way as the static call.
 
+If your project uses [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules), it reports `$this->createUser->run($name)` as a dynamic call to a static method (`staticMethod.dynamicCall`), because *run* is declared static for `DoSomething::run()`. Invoke the instance instead: `($this->createUser)($name)` does the same.
+
 The rules:
 
-- The static `DoSomething::run()` and `DoSomething::actingAs()` only work when the UseCase has no required constructor parameters. Otherwise they throw `UseCaseNotStaticallyRunnableException`: build the UseCase with your container and call *run* on the instance.
+- The static `DoSomething::run()` and `DoSomething::actingAs()` only work when the UseCase has no required constructor parameters (a private or protected constructor is fine). Otherwise they throw `UseCaseNotStaticallyRunnableException`: build the UseCase with your container and call *run* on the instance.  
+  This exception reports a mistake in your code, not bad input, but it extends `PHPCleanArchitectureException` (code 400) like the package's other exceptions: thrown inside another UseCase's *handle*, it runs that UseCase's *rollback*, and if your app turns `PHPCleanArchitectureException` into a 4xx response, exclude this one.
 - On an injected instance, set the public `executor` property, or pass the actor as an argument of *run*:
     ```php
     $this->createUser->executor = $currentUser;

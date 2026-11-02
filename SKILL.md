@@ -81,11 +81,12 @@ final class UserRepository implements RepositoryInterface
 
 ### UseCase — **always extend `BaseUseCase` AND implement `UseCaseInterface`**
 
-`handle()` must keep the exact signature `handle(mixed ...$arguments): mixed` (a typed `handle(string $name): User` is a fatal error); forward to a typed private method. Dependencies go in the constructor:
+`handle()` must keep the exact signature `handle(mixed ...$arguments): mixed` (a typed `handle(string $name): User` is a fatal error); check the arguments, which arrive as `mixed`, and forward them to a typed private method (forwarding `...$arguments` unchecked fails PHPStan level 9/max). Dependencies go in the constructor:
 
 ```php
 use GiacomoMasseroni\PHPCleanArchitecture\BaseUseCase;
 use GiacomoMasseroni\PHPCleanArchitecture\Contracts\UseCaseInterface;
+use InvalidArgumentException;
 
 final class CreateUser extends BaseUseCase implements UseCaseInterface
 {
@@ -93,7 +94,13 @@ final class CreateUser extends BaseUseCase implements UseCaseInterface
 
     public function handle(mixed ...$arguments): mixed
     {
-        return $this->create(...$arguments);
+        $name = $arguments[0] ?? null;
+
+        if (!is_string($name)) {
+            throw new InvalidArgumentException('CreateUser expects the user name');
+        }
+
+        return $this->create($name);
     }
 
     // mixed, not User: a UseCase must not depend on an Entity (deptrac rule)
@@ -156,7 +163,9 @@ $result = $this->createUser->run($name);
 $result = ($this->createUser)($name); // same as run()
 ```
 
-Static `CreateUser::run()` and `CreateUser::actingAs()` throw `UseCaseNotStaticallyRunnableException` when the UseCase has required constructor parameters. `actingAs()` is static, so on an injected instance set the public `executor` property, or pass the actor as an argument:
+With phpstan-strict-rules, `$this->createUser->run(...)` is reported as `staticMethod.dynamicCall` (the `run()` docblock is static, for `CreateUser::run()`): use the invocation form `($this->createUser)(...)` instead.
+
+Static `CreateUser::run()` and `CreateUser::actingAs()` throw `UseCaseNotStaticallyRunnableException` when the UseCase has required constructor parameters (a private or protected constructor without them is fine). The exception flags a wiring mistake, but it extends `PHPCleanArchitectureException` (code 400): thrown inside another UseCase's `handle()` it triggers that UseCase's `rollback()`, and an app mapping `PHPCleanArchitectureException` to 4xx responses should exclude it. `actingAs()` is static, so on an injected instance set the public `executor` property, or pass the actor as an argument:
 
 ```php
 $this->createUser->executor = $currentUser;
@@ -248,7 +257,8 @@ php-clean-architecture:
 |---|---|
 | `make:usecase` | `make:use-case` |
 | `$useCase->handle(...)`: calling `handle()` directly skips the events and `rollback()` | `$useCase->run(...)` |
-| `public function handle(string $name): User`: fatal, it must be compatible with `UseCaseInterface::handle(mixed ...$arguments): mixed` | `handle(mixed ...$arguments): mixed` forwarding to a typed private method |
+| `public function handle(string $name): User`: fatal, it must be compatible with `UseCaseInterface::handle(mixed ...$arguments): mixed` | `handle(mixed ...$arguments): mixed` that checks the arguments and forwards them to a typed private method |
+| `$this->createUser->run(...)` reported as `staticMethod.dynamicCall` by phpstan-strict-rules | `($this->createUser)(...)` |
 | `CreateUser::run(...)` / `CreateUser::actingAs(...)` on a UseCase with required constructor parameters: throws `UseCaseNotStaticallyRunnableException` | Inject the UseCase and call `$this->createUser->run(...)` |
 | Running one instance several times (a shared service, or an `actingAs()` instance) and expecting a clean state: the executor, `$data` and other properties persist between runs | Pass the actor as an argument; reset per-run state at the start of `handle()`, or declare the UseCase as non-shared |
 | UseCase importing a Controller | Reverse the call direction |
