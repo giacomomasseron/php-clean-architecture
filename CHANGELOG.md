@@ -2,6 +2,25 @@
 
 All notable changes to `php-clean-architecture` will be documented in this file.
 
+## v2.1.0 - 2026-11-02
+
+### Features
+
+- Use cases can declare their dependencies in the constructor: build them with your container (Laravel, Symfony, …) or with `new`, and call `$useCase->run(...)` or `$useCase(...)`, with the same events and rollback as the static `run()`
+- `run()` can be called on a use case instance, and runs that instance
+- New `UseCaseNotStaticallyRunnableException`, thrown by the static `run()` and `actingAs()` on a use case with required constructor parameters: build it with your container and call `run()` on the instance
+
+### Fixes
+
+- `actingAs($user)->run()` keeps the executor: `handle()` and the event listeners now see it, it was always `null`
+- `rollback()` and the events act on the instance the caller holds, not on a copy of it
+- A static `run()` builds one instance instead of two
+- SKILL.md: the UseCase example declared `handle(string $name): User`, a fatal error; it now keeps `handle(mixed ...$arguments): mixed` and forwards to a typed private method
+
+### Upgrade notes
+
+- Calling `run()` more than once on the same instance (one returned by `actingAs()`, or a shared container service) now reuses that instance: the executor, `$data` and any other property set by an earlier run are still there for the next run and its `rollback()`. In 2.0.2 each run started from a new instance.
+
 ## v2.0.2 - 2026-09-25
 
 ### Features
