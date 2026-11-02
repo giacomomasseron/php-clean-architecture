@@ -163,7 +163,7 @@ $this->createUser->executor = $currentUser;
 $result = $this->createUser->run($name);
 ```
 
-The executor stays set on that instance: if the container shares it (Symfony services are shared by default), pass the actor as an argument instead.
+Everything set on an instance persists between runs: the executor, `$data` and any other property an earlier `run()` left on it are still there for the next `run()` and its `rollback()`. This applies to an `actingAs()` instance run more than once and to shared container services (Symfony services are shared by default): pass the actor as an argument instead of setting `executor`, and reset per-run state at the start of `handle()` or declare the UseCase as non-shared.
 
 `run()` (static or on an instance) calls `__invoke()`, which fires `UseCaseStartedEvent` → `handle()` → `UseCaseCompletedEvent` on that same instance.  
 `rollback()` is only called when `PHPCleanArchitectureException` is thrown from `handle()`.
@@ -250,6 +250,7 @@ php-clean-architecture:
 | `$useCase->handle(...)`: calling `handle()` directly skips the events and `rollback()` | `$useCase->run(...)` |
 | `public function handle(string $name): User`: fatal, it must be compatible with `UseCaseInterface::handle(mixed ...$arguments): mixed` | `handle(mixed ...$arguments): mixed` forwarding to a typed private method |
 | `CreateUser::run(...)` / `CreateUser::actingAs(...)` on a UseCase with required constructor parameters: throws `UseCaseNotStaticallyRunnableException` | Inject the UseCase and call `$this->createUser->run(...)` |
+| Running one instance several times (a shared service, or an `actingAs()` instance) and expecting a clean state: the executor, `$data` and other properties persist between runs | Pass the actor as an argument; reset per-run state at the start of `handle()`, or declare the UseCase as non-shared |
 | UseCase importing a Controller | Reverse the call direction |
 | Entity importing a Repository | Repositories depend on Entities, not the reverse |
 | `new Dispatcher()` | `Dispatcher::getInstance()` |

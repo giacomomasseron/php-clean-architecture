@@ -284,6 +284,8 @@ You can set the executor using the following example:
 DoSomething::actingAs($user)->run($arg1, $arg2);  
 ```  
 
+*actingAs* returns the UseCase instance. If you call *run* on it more than once, the runs share that instance: the executor, `$data` and any other property set by an earlier run are still there for the next run and its *rollback*.
+
 If you need to rollback the use case, you can override the *rollback* method:
 
 ```php  
@@ -343,7 +345,7 @@ The rules:
     $this->createUser->executor = $currentUser;
     $user = $this->createUser->run($name);
     ```
-  The executor stays set on that instance: if your container shares it (Symfony services are shared by default), pass the actor as an argument instead.
+  The executor stays set on that instance, and so does everything else an earlier *run* left on it, such as `$data`, which the next *run* and its *rollback* see. If your container shares the instance (Symfony services are shared by default), pass the actor as an argument instead of setting `executor`, and reset any per-run state at the start of *handle*, or declare the UseCase as a non-shared service.
 - Never call *handle* directly: it skips the events and the rollback.
 
 #### Events
