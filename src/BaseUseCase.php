@@ -33,12 +33,17 @@ abstract class BaseUseCase implements UseCaseInterface
     private static function getInstance(): static
     {
         $class = new ReflectionClass(static::class);
+        $constructor = $class->getConstructor();
 
-        if ($class->getConstructor()?->getNumberOfRequiredParameters() > 0) {
+        if ($constructor?->getNumberOfRequiredParameters() > 0) {
             throw new UseCaseNotStaticallyRunnableException(static::class);
         }
 
-        return $class->newInstance();
+        // invoke() also reaches a private or protected constructor, which newInstance() refuses
+        $useCase = $class->newInstanceWithoutConstructor();
+        $constructor?->invoke($useCase);
+
+        return $useCase;
     }
 
     /**

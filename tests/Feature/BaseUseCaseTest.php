@@ -50,6 +50,36 @@ final class BaseUseCaseTestRunsAnotherUseCase extends BaseUseCase
     }
 }
 
+final class BaseUseCaseTestPrivateConstructorUseCase extends BaseUseCase
+{
+    private string $builtBy = 'nothing';
+
+    private function __construct()
+    {
+        $this->builtBy = 'its constructor';
+    }
+
+    public function handle(mixed ...$arguments): mixed
+    {
+        return [$this->builtBy, ...$arguments];
+    }
+}
+
+class BaseUseCaseTestProtectedConstructorUseCase extends BaseUseCase
+{
+    private string $builtBy = 'nothing';
+
+    protected function __construct()
+    {
+        $this->builtBy = 'its constructor';
+    }
+
+    public function handle(mixed ...$arguments): mixed
+    {
+        return [$this->builtBy, $this->executor, ...$arguments];
+    }
+}
+
 final class BaseUseCaseTestRecursiveUseCase extends BaseUseCase
 {
     /**
@@ -169,6 +199,16 @@ test('a use case running itself statically from handle runs each level on its ow
         ->and($inner)->not->toBe($middle)
         ->and($inner)->not->toBe($outer)
         ->and(BaseUseCaseTestRecursiveUseCase::$rolledBack)->toBe([$inner, $middle, $outer]);
+});
+
+test('a use case with a private constructor can be run statically', function () {
+    expect(BaseUseCaseTestPrivateConstructorUseCase::run('a'))->toBe(['its constructor', 'a']);
+});
+
+test('a use case with a protected constructor can be run statically through actingAs', function () {
+    $executor = new BaseUseCaseTestExecutor();
+
+    expect(BaseUseCaseTestProtectedConstructorUseCase::actingAs($executor)->run('a'))->toBe(['its constructor', $executor, 'a']);
 });
 
 test('a use case without its own constructor can be instantiated', function () {
